@@ -56,60 +56,76 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
                 with ui.HStack():
                     ui.Button("Add", clicked_fn=on_click)
                     ui.Button("Reset", clicked_fn=on_reset)
-                    ui.Button("Move Camera", clicked_fn=self.move_drone)
 
     # Handling Gamepad Events for a Vehicle
-    def on_gamepad_event(self, event: GamepadEvent):
+    def on_gamepad_event(self, event: carb.input.GamepadEvent):
+        cur_val = event.value
+        absval = abs(event.value)
+
+        if absval == 0:
+            return
+        if absval < 0.001:
+            cur_val = 0
 
         # D-pad Up for accelerating
         if event.input == GamepadInput.DPAD_UP:
             if event.value > 0.5:
-                self._dpad_count += 1
+                self.move_drone_forward(1)  # Move forward
+            else:
+                self.move_drone_forward(0)  # Stop
 
         # D-pad Down for braking
         elif event.input == GamepadInput.DPAD_DOWN:
             if event.value > 0.5:
-                self._dpad_count -= 1
+                self.move_drone_forward(-1)  # Move backward (brake)
+            else:
+                self.move_drone_forward(0)  # Stop
 
-        elif event.input == GamepadInput.A:
-            # self._dpad_count = 0
-            self.move_drone()
-        
-        self.gamepad_info.text = f"gamepad: {self._dpad_count}"
+        # Use right stick for steering
+        if event.input == GamepadInput.RIGHT_STICK_RIGHT:
+            self.move_drone_lateral(cur_val)  # Move right
+        elif event.input == GamepadInput.RIGHT_STICK_LEFT:
+            self.move_drone_lateral(-cur_val)  # Move left
 
-    def move_drone(self):
+
+    def move_drone_forward(self, direction):
         local_transformation: Gf.Matrix4d = self.xform.GetLocalTransformation()
+        drone_forward_vector = Gf.Vec4d(1,0,0,1)  # Adjust based on drone's orientation
 
-        # Define the drone's forward direction (adjust this based on the drone's orientation)
-        drone_forward_vector = Gf.Vec4d(1,0,0,1)  # Change this to match the drone's forward direction
-
-        # Apply the local matrix to the start and end points of the drone's forward vector
         a: Gf.Vec4d = Gf.Vec4d(0,0,0,1) * local_transformation
         b: Gf.Vec4d = drone_forward_vector * local_transformation
 
-        # Get the vector between those two points to get the drone's current forward vector
         drone_fwd_vec = b-a
-
-        # Convert to Vec3 and then normalize to get unit vector
         drone_fwd_unit_vec = Gf.Vec3d(drone_fwd_vec[:3]).GetNormalized()
 
-        # Multiply the forward direction vector with how far forward you want to move
-        forward_step = drone_fwd_unit_vec * 1
+        forward_step = drone_fwd_unit_vec * direction  # Use the direction to determine forward or backward
 
-        # Create a new matrix with the translation that you want to perform
         offset_mat = Gf.Matrix4d()
         offset_mat.SetTranslate(forward_step)
 
-        # Apply the translation to the current local transform
         new_transform = local_transformation * offset_mat
-
-        # Extract the new translation
         translate: Gf.Vec3d = new_transform.ExtractTranslation()
-
-        # Update the attribute
         self.prim.GetAttribute("xformOp:translate").Set(translate)
 
+    def move_drone_lateral(self, direction):
+        local_transformation: Gf.Matrix4d = self.xform.GetLocalTransformation()
+        drone_right_vector = Gf.Vec4d(1,0,0,0)  # Adjust based on drone's orientation
 
+        a: Gf.Vec4d = Gf.Vec4d(0,0,0,1) * local_transformation
+        b: Gf.Vec4d = drone_right_vector * local_transformation
+
+        drone_right_vec = b-a
+        drone_right_unit_vec = Gf.Vec3d(drone_right_vec[:3]).GetNormalized()
+
+        sideways_step = drone_right_unit_vec * direction
+
+        offset_mat = Gf.Matrix4d()
+        offset_mat.SetTranslate(sideways_step)
+
+        new_transform = local_transformation * offset_mat
+        translate: Gf.Vec3d = new_transform.ExtractTranslation()
+        self.prim.GetAttribute("xformOp:translate").Set(translate)
+    
     def on_shutdown(self):
         self.input.unsubscribe_to_gamepad_events(self.gamepad, self.gamepad_event_sub)
         self.gamepad_event_sub = None
