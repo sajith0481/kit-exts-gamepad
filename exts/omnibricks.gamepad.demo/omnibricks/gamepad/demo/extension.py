@@ -29,7 +29,7 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
 
         # get camera
         self.stage = omni.usd.get_context().get_stage()
-        self.prim = self.stage.GetPrimAtPath("/World/quadrotor")
+        self.prim = self.stage.GetPrimAtPath("/Camera")
         self.xform = UsdGeom.Xformable(self.prim)
         
 
@@ -67,64 +67,90 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
         if absval < 0.001:
             cur_val = 0
 
-        # D-pad Up for accelerating
-        if event.input == GamepadInput.DPAD_UP:
-            if event.value > 0.5:
-                self.move_drone_forward(1)  # Move forward
-            else:
-                self.move_drone_forward(0)  # Stop
+        # initialize controls
+        throttle = 0
+        yaw = 0
+        pitch = 0
+        roll = 0
 
-        # D-pad Down for braking
-        elif event.input == GamepadInput.DPAD_DOWN:
+        # left stick y-axis for throttle/altitude
+        if event.input == GamepadInput.LEFT_STICK_UP:
             if event.value > 0.5:
-                self.move_drone_forward(-1)  # Move backward (brake)
-            else:
-                self.move_drone_forward(0)  # Stop
+                throttle = 1
+        elif event.input == GamepadInput.LEFT_STICK_DOWN:
+            if event.value > 0.5:
+                throttle = -1
 
-        # Use right stick for steering
+        # left stick x-axis for yaw
+        if event.input == GamepadInput.LEFT_STICK_RIGHT:
+            if event.value > 0.5:
+                yaw = 1
+        elif event.input == GamepadInput.LEFT_STICK_LEFT:
+            if event.value > 0.5:
+                yaw = -1
+
+        # right stick y-axis for pitch
+        if event.input == GamepadInput.RIGHT_STICK_UP:
+            if event.value > 0.5:
+                pitch = 1
+        elif event.input == GamepadInput.RIGHT_STICK_DOWN:
+            if event.value > 0.5:
+                pitch = -1
+
+        # right stick y-axis for roll
         if event.input == GamepadInput.RIGHT_STICK_RIGHT:
-            self.move_drone_lateral(cur_val)  # Move right
+            if event.value > 0.5:
+                roll = 1
         elif event.input == GamepadInput.RIGHT_STICK_LEFT:
-            self.move_drone_lateral(-cur_val)  # Move left
+            if event.value > 0.5:
+                roll = -1
+                
+        self.update_drone_movement(throttle, yaw, pitch, roll)
 
 
-    def move_drone_forward(self, direction):
+    
+
+    def update_drone_movement(self, throttle, yaw, pitch, roll):
         local_transformation: Gf.Matrix4d = self.xform.GetLocalTransformation()
-        drone_forward_vector = Gf.Vec4d(1,0,0,1)  # Adjust based on drone's orientation
 
-        a: Gf.Vec4d = Gf.Vec4d(0,0,0,1) * local_transformation
-        b: Gf.Vec4d = drone_forward_vector * local_transformation
+        # Handle Yaw
+        current_rot = local_transformation.ExtractRotation()
+        yaw_speed_factor = 1  # simple temp value
+        yaw_rotation = Gf.Rotation(Gf.Vec3d(0, 1, 0), yaw * yaw_speed_factor)
+        yaw_quat = yaw_rotation.GetQuat()
+        current_rot_quat = current_rot.GetQuat()
+        new_rot_quat = yaw_quat * current_rot_quat
+        new_rot_quat.Normalize()
 
-        drone_fwd_vec = b-a
-        drone_fwd_unit_vec = Gf.Vec3d(drone_fwd_vec[:3]).GetNormalized()
+        # Handle Pitch and Roll
+        pitch_speed_factor = 1  # Simple temp value
+        roll_speed_factor = 1  # Simple temp value
+        pitch_rotation = Gf.Rotation(Gf.Vec3d(1, 0, 0), pitch * pitch_speed_factor)
+        roll_rotation = Gf.Rotation(Gf.Vec3d(0, 0, 1), roll * roll_speed_factor)
+        pitch_quat = pitch_rotation.GetQuat()
+        roll_quat = roll_rotation.GetQuat()
+        new_rot_quat = roll_quat * pitch_quat * new_rot_quat
+        new_rot_quat.Normalize()
 
-        forward_step = drone_fwd_unit_vec * direction  # Use the direction to determine forward or backward
-
-        offset_mat = Gf.Matrix4d()
-        offset_mat.SetTranslate(forward_step)
-
+        # Handle Throttle
+        drone_up_vector = Gf.Vec4d(0, 1, 0, 0)
+        transformed_up_vector = drone_up_vector * local_transformation
+        move_direction = Gf.Vec3d(transformed_up_vector[:3]).GetNormalized()
+        throttle_speed_factor = 1  # simple temp value
+        move_step = move_direction * throttle * throttle_speed_factor
+        offset_mat = Gf.Matrix4d().SetTranslate(move_step)
         new_transform = local_transformation * offset_mat
         translate: Gf.Vec3d = new_transform.ExtractTranslation()
+
+        # Apply new rotation and translation
+        self.prim.GetAttribute("xformOp:orient").Set(new_rot_quat)
         self.prim.GetAttribute("xformOp:translate").Set(translate)
 
-    def move_drone_lateral(self, direction):
-        local_transformation: Gf.Matrix4d = self.xform.GetLocalTransformation()
-        drone_right_vector = Gf.Vec4d(1,0,0,0)  # Adjust based on drone's orientation
 
-        a: Gf.Vec4d = Gf.Vec4d(0,0,0,1) * local_transformation
-        b: Gf.Vec4d = drone_right_vector * local_transformation
 
-        drone_right_vec = b-a
-        drone_right_unit_vec = Gf.Vec3d(drone_right_vec[:3]).GetNormalized()
 
-        sideways_step = drone_right_unit_vec * direction
 
-        offset_mat = Gf.Matrix4d()
-        offset_mat.SetTranslate(sideways_step)
 
-        new_transform = local_transformation * offset_mat
-        translate: Gf.Vec3d = new_transform.ExtractTranslation()
-        self.prim.GetAttribute("xformOp:translate").Set(translate)
     
     def on_shutdown(self):
         self.input.unsubscribe_to_gamepad_events(self.gamepad, self.gamepad_event_sub)
