@@ -6,9 +6,10 @@ from carb.input import GamepadInput, GamepadEvent, acquire_input_interface
 import carb
 from functools import partial
 import logging
-from pxr import Gf, UsdGeom, Usd
+from pxr import Gf, UsdGeom, Usd, Gf, Vt
 import omni.usd
 from omni.ui import color as cl
+import numpy as np
 
 
     
@@ -43,17 +44,68 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
         self.gamepad_event_sub = self.input.subscribe_to_gamepad_events(self.gamepad, self.on_gamepad_event_FPS)
 
         with self._window.frame:
-            # Button to change controller scheme
-            collection = ui.RadioCollection()
-            with ui.HStack(style=self.style, height=20):
-                for button_label in ["FPS Mode", "Mode 2"]:
-                    ui.RadioButton(radio_collection=collection,
-                                   clicked_fn=self.toggle_mode,
-                                   width=40,
-                                   height=30
-                                   )
-                    ui.Label(f"{button_label}", name="text")
-            self.collection = collection
+            with ui.VStack():
+                # Button to change controller scheme
+                collection = ui.RadioCollection()
+                with ui.HStack(style=self.style, height=20):
+                    for button_label in ["FPS Mode", "Mode 2"]:
+                        ui.RadioButton(radio_collection=collection,
+                                    clicked_fn=self.toggle_mode,
+                                    width=40,
+                                    height=30
+                                    )
+                        ui.Label(f"{button_label}", name="text")
+                self.collection = collection
+
+                # Add a new button for creating a sphere point cloud
+                ui.Button("Create Sphere Point Cloud", clicked_fn=self.create_sphere_point_cloud)
+
+
+    def create_sphere_point_cloud(self):
+        """Function to create a point cloud representation of a sphere."""
+        samples = 100  # The number of points for the point cloud
+        radius = 0.5  # Get the radius from the input field
+
+        # Generate points on the sphere using the Fibonacci method
+        sphere_points = self.fibonacci_sphere(samples, radius)
+
+        # Create a new point cloud in USD
+        self.create_usd_point_cloud(sphere_points)
+
+    def fibonacci_sphere(self, samples=1000, radius=1.0):
+        """Generate points on a sphere using the Fibonacci lattice method."""
+        points = []
+        phi = np.pi * (3. - np.sqrt(5.))  # Golden angle
+
+        for i in range(samples):
+            y = 1 - (i / float(samples - 1)) * 2  # y goes from 1 to -1
+            radius_at_y = np.sqrt(1 - y * y)  # radius at y
+
+            theta = phi * i  # golden angle increment
+
+            x = np.cos(theta) * radius_at_y
+            z = np.sin(theta) * radius_at_y
+
+            points.append((radius * x, radius * y, radius * z))
+
+        return points
+
+    def create_usd_point_cloud(self, points):
+        """Create a USD point cloud from the generated points."""
+        stage = omni.usd.get_context().get_stage()
+        point_cloud_path = '/World/pointCloudSphere'
+        point_cloud = UsdGeom.Points.Define(stage, point_cloud_path)
+
+        # Convert points to the appropriate format for USD
+        usd_points = Vt.Vec3fArray(len(points))
+        for i, point in enumerate(points):
+            usd_points[i] = Gf.Vec3f(point[0], point[1], point[2])
+
+        # Set the positions of the point cloud
+        point_cloud.GetPointsAttr().Set(usd_points)
+
+        # Optionally set the display color of the points if needed
+        point_cloud.CreateDisplayColorAttr([Gf.Vec3f(1.0, 0.0, 0.0)]) # Red color
 
 
     def toggle_mode(self):
