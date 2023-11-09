@@ -15,10 +15,10 @@ from typing import Optional
 from cesium.omniverse.api.globe_anchor import anchor_xform_at_path
 
 # This should be defined somewhere in your code
-def set_global_anchor(latitude, longitude, height):
+def set_global_anchor(latitude, longitude, height, sphere_path):
 
     # Example usage:
-    xform_path = Sdf.Path('/World/Sphere')
+    xform_path = Sdf.Path(sphere_path)
 
     # Call the function to set the global anchor
     anchor_xform_at_path(xform_path, latitude, longitude, height)
@@ -37,6 +37,7 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
 
         self._count = 0
         self._dpad_count = 0
+        self.sphere_count = 0
 
         self._window = ui.Window("My Window", width=300, height=300)
 
@@ -66,7 +67,7 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
                         ui.Label(f"{button_label}", name="text")
                 self.collection = collection
                 # Add input fields for latitude, longitude, and height
-                ui.Label("Enter Global Anchor Coordinates", alignment=ui.Alignment.CENTER)
+                ui.Label("Enter Transmitter Coordinates", alignment=ui.Alignment.CENTER)
 
                 # Latitude input
                 with ui.HStack():
@@ -82,17 +83,97 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
                 with ui.HStack():
                     ui.Label("Height:")
                     self.height_field = ui.FloatField()
+
+                # Add input field for the sphere's radius
+                with ui.HStack():
+                    ui.Label("Sphere Radius:")
+                    self.radius_field = ui.FloatField(value=1.0)  # Default value of 1.0
+                
                 # Add button to set the global anchor
-                ui.Button("Set Global Anchor", clicked_fn=self.set_global_anchor_clicked)                
+                ui.Button("Create Signal", clicked_fn=self.create_signal)                
     
-    def set_global_anchor_clicked(self):
+    def create_sphere_and_material(self):
+        # Increment the sphere count
+        self.sphere_count += 1
+        sphere_name = f'Signal{self.sphere_count}'
+        sphere_path = f'/World/{sphere_name}'
+
+        # Create Sphere with the incremented name
+        omni.kit.commands.execute('CreateMeshPrimWithDefaultXform',
+            prim_type='Sphere',
+            prim_path=sphere_path,
+            select_new_prim=False,
+            prepend_default_prim=True)
+        
+        # Create the material path for this instance
+        material_path = f'/World/Looks/Clear_Glass{self.sphere_count}'
+
+        omni.kit.commands.execute('CreateAndBindMdlMaterialFromLibrary',
+            mdl_name='http://omniverse-content-production.s3-us-west-2.amazonaws.com/Materials/Base/Glass/Clear_Glass.mdl',
+            mtl_name=f'Clear_Glass',
+            mtl_created_list=[material_path],
+            select_new_prim=False)
+
+        omni.kit.commands.execute('CreatePrim',
+            prim_path='/World/Looks',
+            prim_type='Scope',
+            select_new_prim=False)
+
+        omni.kit.commands.execute('CreateMdlMaterialPrim',
+            mtl_url='http://omniverse-content-production.s3-us-west-2.amazonaws.com/Materials/Base/Glass/Clear_Glass.mdl',
+            mtl_name='Clear_Glass',
+            mtl_path=material_path,
+            select_new_prim=False)
+
+        # Bind the material to the new sphere
+        omni.kit.commands.execute('BindMaterial',
+            prim_path=Sdf.Path(sphere_path),
+            material_path=Sdf.Path(material_path),
+            strength=None)
+        
+        # omni.kit.commands.execute('ChangeProperty',
+        #     prop_path=Sdf.Path(f'{material_path}/Shader.inputs:glass_color'),
+        #     value=Gf.Vec3f(0.6919831037521362, 0.42336520552635193, 0.42336520552635193),
+        #     prev=Gf.Vec3f(1.0, 1.0, 1.0))
+
+        return sphere_path, material_path  # Return the path of the newly created sphere
+
+    def create_signal(self):
         # Get the latitude, longitude, and height from the UI fields
         latitude = self.latitude_field.model.get_value_as_float()
         longitude = self.longitude_field.model.get_value_as_float()
         height = self.height_field.model.get_value_as_float()
+        radius = self.radius_field.model.get_value_as_float()
+
+        # Call the function to create the sphere and apply the material
+        sphere_path, material_path = self.create_sphere_and_material()
 
         # Now, call the function to set the global anchor
-        set_global_anchor(latitude, longitude, height)
+        set_global_anchor(latitude, longitude, height, sphere_path)
+
+        # Now, scale the sphere to the given radius
+        self.scale_sphere_to_radius(radius, sphere_path)
+
+    def scale_sphere_to_radius(self, radius, sphere_path):
+        # Assuming the sphere's original radius at scale (1,1,1) is 1 unit
+        new_scale = Gf.Vec3d(radius, radius, radius)
+
+        # The path of the sphere might need to be adjusted based on your scene
+        #sphere_path = '/World/Sphere'
+
+        # Turn on 'doNotCastShadows' for the sphere
+        omni.kit.commands.execute('ChangeProperty',
+            prop_path=Sdf.Path(f"{sphere_path}.primvars:doNotCastShadows"),
+            value=True,
+            prev=None  # Set this to whatever the previous value might be, or remove if not needed
+        )
+
+        # Execute the command to scale the sphere
+        omni.kit.commands.execute('ChangeProperty',
+            prop_path=Sdf.Path(f"{sphere_path}.cesium:anchor:scale"),
+            value=new_scale,
+            prev=Gf.Vec3d(1.0, 1.0, 1.0)  # You might need to get the actual previous scale if necessary
+        )
 
     def toggle_mode(self):
         # Unsubscribe the current event subscription
