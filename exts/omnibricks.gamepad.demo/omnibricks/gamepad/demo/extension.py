@@ -6,14 +6,24 @@ from carb.input import GamepadInput, GamepadEvent, acquire_input_interface
 import carb
 from functools import partial
 import logging
-from pxr import Gf, UsdGeom, Usd, Gf, Vt
+from pxr import Gf, UsdGeom, Usd, Gf, Vt, Sdf
 import omni.usd
 from omni.ui import color as cl
 import numpy as np
+from pxr.Sdf import Path
+from typing import Optional
+from cesium.omniverse.api.globe_anchor import anchor_xform_at_path
 
+# This should be defined somewhere in your code
+def set_global_anchor(latitude, longitude, height):
 
-    
+    # Example usage:
+    xform_path = Sdf.Path('/World/Sphere')
 
+    # Call the function to set the global anchor
+    anchor_xform_at_path(xform_path, latitude, longitude, height)
+
+    print(f"Setting global anchor at latitude: {latitude}, longitude: {longitude}, height: {height}")
 
 class OmnibricksGamepadDemoExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
@@ -37,8 +47,7 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
         # get camera
         self.stage = omni.usd.get_context().get_stage()
         self.prim = self.stage.GetPrimAtPath("/World/iris")
-        self.xform = UsdGeom.Xformable(self.prim)
-        
+        self.xform = UsdGeom.Xformable(self.prim)       
 
         self.input = acquire_input_interface()
         self.gamepad_event_sub = self.input.subscribe_to_gamepad_events(self.gamepad, self.on_gamepad_event_FPS)
@@ -56,57 +65,34 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
                                     )
                         ui.Label(f"{button_label}", name="text")
                 self.collection = collection
+                # Add input fields for latitude, longitude, and height
+                ui.Label("Enter Global Anchor Coordinates", alignment=ui.Alignment.CENTER)
 
-                # Add a new button for creating a sphere point cloud
-                ui.Button("Create Sphere Point Cloud", clicked_fn=self.create_sphere_point_cloud)
+                # Latitude input
+                with ui.HStack():
+                    ui.Label("Latitude:")
+                    self.latitude_field = ui.FloatField()
 
+                # Longitude input
+                with ui.HStack():
+                    ui.Label("Longitude:")
+                    self.longitude_field = ui.FloatField()
+                
+                # Height input
+                with ui.HStack():
+                    ui.Label("Height:")
+                    self.height_field = ui.FloatField()
+                # Add button to set the global anchor
+                ui.Button("Set Global Anchor", clicked_fn=self.set_global_anchor_clicked)                
+    
+    def set_global_anchor_clicked(self):
+        # Get the latitude, longitude, and height from the UI fields
+        latitude = self.latitude_field.model.get_value_as_float()
+        longitude = self.longitude_field.model.get_value_as_float()
+        height = self.height_field.model.get_value_as_float()
 
-    def create_sphere_point_cloud(self):
-        """Function to create a point cloud representation of a sphere."""
-        samples = 100  # The number of points for the point cloud
-        radius = 0.5  # Get the radius from the input field
-
-        # Generate points on the sphere using the Fibonacci method
-        sphere_points = self.fibonacci_sphere(samples, radius)
-
-        # Create a new point cloud in USD
-        self.create_usd_point_cloud(sphere_points)
-
-    def fibonacci_sphere(self, samples=1000, radius=1.0):
-        """Generate points on a sphere using the Fibonacci lattice method."""
-        points = []
-        phi = np.pi * (3. - np.sqrt(5.))  # Golden angle
-
-        for i in range(samples):
-            y = 1 - (i / float(samples - 1)) * 2  # y goes from 1 to -1
-            radius_at_y = np.sqrt(1 - y * y)  # radius at y
-
-            theta = phi * i  # golden angle increment
-
-            x = np.cos(theta) * radius_at_y
-            z = np.sin(theta) * radius_at_y
-
-            points.append((radius * x, radius * y, radius * z))
-
-        return points
-
-    def create_usd_point_cloud(self, points):
-        """Create a USD point cloud from the generated points."""
-        stage = omni.usd.get_context().get_stage()
-        point_cloud_path = '/World/pointCloudSphere'
-        point_cloud = UsdGeom.Points.Define(stage, point_cloud_path)
-
-        # Convert points to the appropriate format for USD
-        usd_points = Vt.Vec3fArray(len(points))
-        for i, point in enumerate(points):
-            usd_points[i] = Gf.Vec3f(point[0], point[1], point[2])
-
-        # Set the positions of the point cloud
-        point_cloud.GetPointsAttr().Set(usd_points)
-
-        # Optionally set the display color of the points if needed
-        point_cloud.CreateDisplayColorAttr([Gf.Vec3f(1.0, 0.0, 0.0)]) # Red color
-
+        # Now, call the function to set the global anchor
+        set_global_anchor(latitude, longitude, height)
 
     def toggle_mode(self):
         # Unsubscribe the current event subscription
