@@ -1,25 +1,26 @@
 import carb
 from carb.input import GamepadInput, GamepadEvent, acquire_input_interface
 from pxr import Gf, UsdGeom, Usd
+import omni
 
 
 class GamepadEventHandler:
     def __init__(self, stage, drone_movement_handler, prim_path="/World/iris"):
+
+        # subscribe to gamepad events
+        self._app_window = omni.appwindow.get_default_app_window()
+        self.gamepad = self._app_window.get_gamepad(0)
         self.input = acquire_input_interface()
+        self.gamepad_event_sub = self.input.subscribe_to_gamepad_events(self.gamepad, self.on_gamepad_event_FPS)
+
         self.stage = stage
         self.prim_path = prim_path
-        self.gamepad_event_sub = None
         self.current_mode = 0  # 0 for FPS mode, 1 for another mode
         self.drone_movement_handler = drone_movement_handler
 
         # Initialize the primary game object
         self.prim = self.stage.GetPrimAtPath(self.prim_path)
         self.xform = UsdGeom.Xformable(self.prim)
-
-    def subscribe_to_gamepad_events(self):
-        self._app_window = carb.appwindow.get_default_app_window()
-        self.gamepad = self._app_window.get_gamepad(0)
-        self.gamepad_event_sub = self.input.subscribe_to_gamepad_events(self.gamepad, self.on_gamepad_event)
 
     def unsubscribe_to_gamepad_events(self):
         if self.gamepad_event_sub:
@@ -119,9 +120,9 @@ class GamepadEventHandler:
 
         # Right stick x-axis for yaw orientation
         if event.input == GamepadInput.RIGHT_STICK_RIGHT:
-            pitch = cur_val
-        elif event.input == GamepadInput.RIGHT_STICK_LEFT:
             pitch = -cur_val
+        elif event.input == GamepadInput.RIGHT_STICK_LEFT:
+            pitch = cur_val
 
         # shoulder bottons for up/down
         if event.input == GamepadInput.LEFT_TRIGGER:

@@ -1,4 +1,6 @@
-from pxr import Gf, UsdGeom
+import omni.kit.commands
+from pxr import Sdf, Gf, UsdGeom, Usd
+import omni
 
 
 class DroneMovementHandler:
@@ -53,13 +55,14 @@ class DroneMovementHandler:
 
     def update_drone_movement_FPS(self, forward, strafe, up_down, yaw, pitch):
         # Get the current transformation of the drone
-        try:
-            local_transformation: Gf.Matrix4d = self.xform.GetLocalTransformation()
-        except Exception as e:
-            self.stage = omni.usd.get_context().get_stage()
-            self.prim = self.stage.GetPrimAtPath("/World/iris")
-            self.xform = UsdGeom.Xformable(self.prim)
-            local_transformation: Gf.Matrix4d = self.xform.GetLocalTransformation()
+        local_transformation: Gf.Matrix4d = self.xform.GetLocalTransformation()
+        # try:
+        #     local_transformation: Gf.Matrix4d = self.xform.GetLocalTransformation()
+        # except Exception as e:
+        #     self.stage = omni.usd.get_context().get_stage()
+        #     self.prim = self.stage.GetPrimAtPath("/World/iris")
+        #     self.xform = UsdGeom.Xformable(self.prim)
+        #     local_transformation: Gf.Matrix4d = self.xform.GetLocalTransformation()
 
         # Compute the translation vectors based on the local reference frame
         right_vector = local_transformation.TransformDir(Gf.Vec3d(0, -1, 0)).GetNormalized()
@@ -78,8 +81,25 @@ class DroneMovementHandler:
         yaw_speed_factor = 1
         pitch_speed_factor = 1
         current_euler_rotation = self.prim.GetAttribute("xformOp:rotateXYZ").Get()
+        
+        # Apply yaw to the z component for rotation around the vertical axis
         new_yaw = current_euler_rotation[1] + (yaw * yaw_speed_factor)
-        new_pitch = current_euler_rotation[0] + (pitch * pitch_speed_factor)
+        
+        new_pitch = current_euler_rotation[2] + (pitch * pitch_speed_factor)
 
         # Set the new rotation
-        self.prim.GetAttribute("xformOp:rotateXYZ").Set(Gf.Vec3f(new_pitch, new_yaw, current_euler_rotation[2]))
+        # rotations around the z axis aren't being reflected in prim properties
+        self.prim.GetAttribute("xformOp:rotateXYZ").Set(Gf.Vec3f(
+            current_euler_rotation[0],
+            new_yaw,
+            new_pitch))
+        # return 'yolo'
+        # different method to rotate around z axis
+        # omni.kit.commands.execute(
+        #     'ChangeProperty',
+        #     prop_path=Sdf.Path('/World/iris.xformOp:rotateXYZ'),
+        #     value=Gf.Vec3f(-5.7126617431640625, -2.000185251235962, 43.0),
+        #     prev=Gf.Vec3f(-5.7126617431640625, -2.000185251235962, 44.10000228881836),
+        #     target_layer=Sdf.Find('omniverse://localhost/Projects/soceur/google_maps_stage.usd'),
+        #     usd_context_name=Usd.Stage.Open(rootLayer=Sdf.Find('omniverse://localhost/Projects/soceur/google_maps_stage.usd'), sessionLayer=Sdf.Find('anon:00000246D28DF0E0'), pathResolverContext=<invalid repr>))
+
