@@ -25,5 +25,6 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
     def on_shutdown(self):
         self.gamepad_event_handler.shutdown()
         self.ui_components.shutdown()
+        self.emitter_manager.shutdown()
         self.sphere_material_handler.shutdown()
         print("[omnibricks.gamepad.demo] omnibricks gamepad demo shutdown")

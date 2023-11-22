@@ -14,6 +14,8 @@ class SphereMaterialHandler:
         if self.stage.GetPrimAtPath(self.material_path).GetPrim().IsValid():
             return None
         
+        self.clean_up_old_emitters()
+        
         # create prim to hold materials
         omni.kit.commands.execute(
             'CreatePrim',
@@ -117,22 +119,38 @@ class SphereMaterialHandler:
         self.create_or_update_sphere(emitter)
 
     def clean_up_old_emitters(self):
-        good_emitter_names = [emitter['prim_name'] for emitter in self.emitter_manager.get_emitters()]
-        bad_emitter_prims = []
-        for prim in Usd.PrimRange(self.stage.GetPrimAtPath(Sdf.Path("/World/emitters"))):
-            if prim.GetName() == 'emitters':
-                continue
-            elif prim.GetName() not in good_emitter_names:
-                bad_emitter_prims.append(prim)
-        try:
-            for prim in bad_emitter_prims:
-                omni.kit.commands.execute(
-                    'DeletePrims',
-                    paths=[Sdf.Path(prim.GetPath())],
-                    destructive=False)
-                del self.sphere_prims[prim.GetName()]
-        except Exception as e:
-            pass
+        self.stage.RemovePrim(self.stage.GetPrimAtPath(Sdf.Path("/World/emitters")))
+        # prims_to_delete = []
+        # for prim in Usd.PrimRange(self.stage.GetPrimAtPath(Sdf.Path("/World/emitters"))):
+        #     if prim.GetName() == 'emitters':
+        #         continue
+        #     else:
+        #         # prims_to_delete.append(prim)
+        #         self.stage.RemovePrim(prim.GetPath())
+        # for prim in prims_to_delete:
+            
+        #     del self.sphere_prims[prim.GetName()]
+        #     self.stage.RemovePrim(prim.GetPath())
+            # omni.kit.commands.execute(
+            #         'DeletePrims',
+            #         paths=[Sdf.Path(prim.GetPath())],
+            #         destructive=True)
+        # good_emitter_names = [emitter['prim_name'] for emitter in self.emitter_manager.get_emitters()]
+        # bad_emitter_prims = []
+        # for prim in Usd.PrimRange(self.stage.GetPrimAtPath(Sdf.Path("/World/emitters"))):
+        #     if prim.GetName() == 'emitters':
+        #         continue
+        #     elif prim.GetName() not in good_emitter_names:
+        #         bad_emitter_prims.append(prim)
+        # try:
+        #     for prim in bad_emitter_prims:
+        #         omni.kit.commands.execute(
+        #             'DeletePrims',
+        #             paths=[Sdf.Path(prim.GetPath())],
+        #             destructive=False)
+        #         del self.sphere_prims[prim.GetName()]
+        # except Exception as e:
+        #     pass
 
 
     def delete_sphere(self, prim_name):
