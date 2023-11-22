@@ -1,17 +1,27 @@
+import random
 
 
 class EmitterManager:
     def __init__(self):
         self.emitters = []
-        self.emitters = [{
+        self.init_emitters = [{
             "display_name": "Panzer Kaserne",
-            "prim_name": self.generate_unique_prim_name("Panzer_Kaserne"),
+            "prim_name": "Panzer_Kaserne",
             "latitude": 48.73516,
             "longitude": 9.07533,
             "height": 250,
             "radius": 2000
-        }
+        },
+        {"display_name": "Emitter 1", "latitude": 48.7758, "longitude": 9.1829, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter1"},
+        {"display_name": "Emitter 2", "latitude": 48.7625, "longitude": 9.1650, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter2"},
+        {"display_name": "Emitter 3", "latitude": 48.7492, "longitude": 9.1471, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter3"},
+        {"display_name": "Emitter 4", "latitude": 48.7360, "longitude": 9.1292, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter4"},
+        {"display_name": "Emitter 5", "latitude": 48.7227, "longitude": 9.1113, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter5"},
+        {"display_name": "Emitter 6", "latitude": 48.7094, "longitude": 9.0934, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter6"},
+        {"display_name": "Emitter 7", "latitude": 48.6899, "longitude": 9.0419, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter7"}
         ]
+
+        self.emitters = self.init_emitters
 
     def generate_unique_prim_name(self, display_name, exclude_index=None):
         base_name = display_name.replace(" ", "_")  # Remove spaces
@@ -61,3 +71,16 @@ class EmitterManager:
 
     def get_emitters(self):
         return self.emitters
+
+    def clean_up_old_emitters(self):
+        for i, emitter in enumerate(self.emitters):
+            self.delete_emitter(i)
+        # init_emitter_display_names = [init_emitter['display_name'] for init_emitter in self.init_emitters]
+        # for i, emitter in enumerate(self.emitters):
+        #     if emitter['display_name'] in init_emitter_display_names:
+        #         self.delete_emitter(i)
+        #     else:
+        #         continue
+
+    def shutdown(self):
+        self.clean_up_old_emitters()
