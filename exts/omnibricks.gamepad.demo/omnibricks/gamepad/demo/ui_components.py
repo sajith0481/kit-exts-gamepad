@@ -76,10 +76,10 @@ class UIComponents:
                 self.emitter_field_references.append(field_references)
 
                 # Update button
-                ui.Button("Update", clicked_fn=lambda x=i: self.handle_update_emitter(i))
+                ui.Button("Update", clicked_fn=lambda x=i: self.handle_update_emitter(x))
 
                 # Delete button
-                ui.Button("Delete", clicked_fn=lambda x=i: self.handle_delete_emitter(i))
+                ui.Button("Delete", clicked_fn=lambda x=i: self.handle_delete_emitter(x))
 
     def handle_update_emitter(self, index):
         field_references = self.emitter_field_references[index]
@@ -92,7 +92,7 @@ class UIComponents:
 
         self.emitter_manager.update_emitter(index, name, latitude, longitude, height, radius)
         updated_emitter = self.emitter_manager.get_emitters()[index]
-        self.sphere_material_handler.update_sphere(updated_emitter)
+        self.sphere_material_handler.create_or_update_sphere(updated_emitter)
 
     def handle_delete_emitter(self, index):
         if index < len(self.emitter_manager.get_emitters()):

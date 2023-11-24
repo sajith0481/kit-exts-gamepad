@@ -14,7 +14,7 @@ class SphereMaterialHandler:
         if self.stage.GetPrimAtPath(self.material_path).GetPrim().IsValid():
             return None
         
-        self.clean_up_old_emitters()
+        # self.clean_up_old_emitters()
         
         # create prim to hold materials
         omni.kit.commands.execute(
@@ -64,13 +64,15 @@ class SphereMaterialHandler:
     def create_or_update_sphere(self, emitter):
         # Create or update a sphere based on emitter data
         prim_name = emitter['prim_name']
-        if prim_name not in self.sphere_prims:
-            # Create a new sphere if it doesn't exist
-            sphere_path = self.create_sphere(emitter)
-            self.sphere_prims[prim_name] = sphere_path
-        else:
-            # Update the existing sphere
-            self.update_sphere(emitter)
+        sphere_path = self.create_sphere(emitter)
+        self.sphere_prims[prim_name] = sphere_path
+        # if prim_name not in self.sphere_prims:
+        #     # Create a new sphere if it doesn't exist
+        #     sphere_path = self.create_sphere(emitter)
+        #     self.sphere_prims[prim_name] = sphere_path
+        # else:
+        #     # Update the existing sphere
+        #     self.update_sphere(emitter)
 
     def create_sphere(self, emitter):
         # don't create empty spheres
@@ -78,14 +80,14 @@ class SphereMaterialHandler:
             return None
         
         sphere_path = f"/World/emitters/{emitter['prim_name']}"
-
-        # Create Sphere
-        omni.kit.commands.execute(
-            'CreateMeshPrimWithDefaultXform',
-            prim_type='Sphere',
-            prim_path=sphere_path,
-            select_new_prim=False,
-            prepend_default_prim=True)
+        if not self.stage.GetPrimAtPath(sphere_path).IsValid():
+            # Create Sphere
+            omni.kit.commands.execute(
+                'CreateMeshPrimWithDefaultXform',
+                prim_type='Sphere',
+                prim_path=sphere_path,
+                select_new_prim=False,
+                prepend_default_prim=True)
         
         # Bind the material to the new sphere
         omni.kit.commands.execute(
@@ -108,50 +110,15 @@ class SphereMaterialHandler:
         omni.kit.commands.execute(
             'ChangeProperty',
             prop_path=Sdf.Path(f"{sphere_path}.cesium:anchor:scale"),
+            # value=Gf.Vec3d(int(radius), int(radius), int(radius)),
             value=Gf.Vec3d(radius, radius, radius),
             prev=None)
 
         return sphere_path
 
-    def update_sphere(self, emitter):
-        self.delete_sphere(emitter['prim_name'])
-
-        self.create_or_update_sphere(emitter)
 
     def clean_up_old_emitters(self):
-        self.stage.RemovePrim(self.stage.GetPrimAtPath(Sdf.Path("/World/emitters")))
-        # prims_to_delete = []
-        # for prim in Usd.PrimRange(self.stage.GetPrimAtPath(Sdf.Path("/World/emitters"))):
-        #     if prim.GetName() == 'emitters':
-        #         continue
-        #     else:
-        #         # prims_to_delete.append(prim)
-        #         self.stage.RemovePrim(prim.GetPath())
-        # for prim in prims_to_delete:
-            
-        #     del self.sphere_prims[prim.GetName()]
-        #     self.stage.RemovePrim(prim.GetPath())
-            # omni.kit.commands.execute(
-            #         'DeletePrims',
-            #         paths=[Sdf.Path(prim.GetPath())],
-            #         destructive=True)
-        # good_emitter_names = [emitter['prim_name'] for emitter in self.emitter_manager.get_emitters()]
-        # bad_emitter_prims = []
-        # for prim in Usd.PrimRange(self.stage.GetPrimAtPath(Sdf.Path("/World/emitters"))):
-        #     if prim.GetName() == 'emitters':
-        #         continue
-        #     elif prim.GetName() not in good_emitter_names:
-        #         bad_emitter_prims.append(prim)
-        # try:
-        #     for prim in bad_emitter_prims:
-        #         omni.kit.commands.execute(
-        #             'DeletePrims',
-        #             paths=[Sdf.Path(prim.GetPath())],
-        #             destructive=False)
-        #         del self.sphere_prims[prim.GetName()]
-        # except Exception as e:
-        #     pass
-
+        self.stage.GetPrimAtPath(Sdf.Path("/World/emitters")).SetActive(False)
 
     def delete_sphere(self, prim_name):
         if prim_name in self.sphere_prims:
@@ -165,4 +132,5 @@ class SphereMaterialHandler:
             print(f"No sphere found with prim_name: {prim_name}")
 
     def shutdown(self):
-        self.clean_up_old_emitters()
+        # self.clean_up_old_emitters()
+        pass

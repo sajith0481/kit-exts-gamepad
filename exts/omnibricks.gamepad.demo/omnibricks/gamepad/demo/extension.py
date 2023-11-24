@@ -20,7 +20,7 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
             self.sphere_material_handler,
             self.emitter_manager
             )
-        self.sphere_material_handler.create_spheres_for_emitters()
+        # self.sphere_material_handler.create_spheres_for_emitters()
 
     def on_shutdown(self):
         self.gamepad_event_handler.shutdown()
