@@ -22,8 +22,8 @@ class AnimationManager:
 
 
         # Animation Mode
-        self.animation_mode = 0  # 0 for animation on, 1 for animation off
-        # Define the range and steps for radius values
+        self.animation_mode = 1  # 0 for animation on, 1 for animation off
+        # Define the range and steps for radius values for emitter 2
         self.min_radius = 2000
         self.max_radius = 5000
         self.radius_step = 50  # Adjust the step size as needed
@@ -52,7 +52,7 @@ class AnimationManager:
                 self.current_index = (self.current_index + 1) % len(self.radius_values)
 
     def update_radius(self, radius):
-        self.radius_attribute.Set(Gf.Vec3d(2000, 2000, radius))
+        self.radius_attribute.Set(Gf.Vec3d(1000, 1000, radius))
 
     def toggle_animation_mode(self):
         self.animation_mode = (self.animation_mode + 1) % 2
