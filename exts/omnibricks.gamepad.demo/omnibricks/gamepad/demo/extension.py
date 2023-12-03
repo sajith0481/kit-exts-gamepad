@@ -5,6 +5,7 @@ from .ui_components import UIComponents
 from .gamepad_events import GamepadEventHandler
 from .sphere_material import SphereMaterialHandler
 from .emitter_manager import EmitterManager
+from .animation_manager import AnimationManager
 
 class OmnibricksGamepadDemoExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
@@ -20,11 +21,12 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
             self.sphere_material_handler,
             self.emitter_manager
             )
-        # self.sphere_material_handler.create_spheres_for_emitters()
+        self.animation_manager = AnimationManager(self.stage, self.emitter_manager)
 
     def on_shutdown(self):
         self.gamepad_event_handler.shutdown()
         self.ui_components.shutdown()
         self.emitter_manager.shutdown()
         self.sphere_material_handler.shutdown()
+        self.animation_manager.shutdown()
         print("[omnibricks.gamepad.demo] omnibricks gamepad demo shutdown")
