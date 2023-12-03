@@ -29,7 +29,7 @@ class GamepadEventHandler:
 
     def toggle_gamepad_mode(self):
         self.unsubscribe_to_gamepad_events()
-        self.current_mode
+        self.current_mode = (self.current_mode + 1) % 2
         if self.current_mode == 0:
             self.gamepad_event_sub = self.input.subscribe_to_gamepad_events(self.gamepad, self.on_gamepad_event_FPS)
         else:
