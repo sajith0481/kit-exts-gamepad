@@ -12,6 +12,7 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
         self.stage = omni.usd.get_context().get_stage()
 
         self.emitter_manager = EmitterManager()
+        self.animation_manager = AnimationManager(self.stage, self.emitter_manager)
         self.sphere_material_handler = SphereMaterialHandler(self.stage, self.emitter_manager)
         self.drone_movement_handler = DroneMovementHandler(self.stage)
         self.gamepad_event_handler = GamepadEventHandler(self.stage, self.drone_movement_handler)
@@ -19,9 +20,9 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
             ext_id,
             self.gamepad_event_handler,
             self.sphere_material_handler,
-            self.emitter_manager
+            self.emitter_manager,
+            self.animation_manager
             )
-        self.animation_manager = AnimationManager(self.stage, self.emitter_manager)
 
     def on_shutdown(self):
         self.gamepad_event_handler.shutdown()

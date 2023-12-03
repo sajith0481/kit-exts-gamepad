@@ -21,7 +21,8 @@ class AnimationManager:
         )
 
 
-
+        # Animation Mode
+        self.animation_mode = 0  # 0 for animation on, 1 for animation off
         # Define the range and steps for radius values
         self.min_radius = 2000
         self.max_radius = 5000
@@ -40,18 +41,21 @@ class AnimationManager:
         self.radius_attribute = self.stage.GetPrimAtPath(self.sphere_path).GetAttribute("cesium:anchor:scale")
 
     def _on_timeline_event(self, e: carb.events.IEvent):
-        current_time = time.time()
-        time_since_last_update = current_time - self.last_update_time
-
-        # Check if it's time to update based on updates_per_second
-        if time_since_last_update >= 1 / self.updates_per_second:
-            self.last_update_time = current_time
-            new_radius = self.radius_values[self.current_index]
-            self.update_radius(new_radius)
-            self.current_index = (self.current_index + 1) % len(self.radius_values)
+        if self.animation_mode == 0:
+            current_time = time.time()
+            time_since_last_update = current_time - self.last_update_time
+            # Check if it's time to update based on updates_per_second
+            if time_since_last_update >= 1 / self.updates_per_second:
+                self.last_update_time = current_time
+                new_radius = self.radius_values[self.current_index]
+                self.update_radius(new_radius)
+                self.current_index = (self.current_index + 1) % len(self.radius_values)
 
     def update_radius(self, radius):
         self.radius_attribute.Set(Gf.Vec3d(2000, 2000, radius))
+
+    def toggle_animation_mode(self):
+        self.animation_mode = (self.animation_mode + 1) % 2
 
     def shutdown(self):
         self.itimeline = None
