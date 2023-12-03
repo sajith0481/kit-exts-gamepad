@@ -56,7 +56,7 @@ class UIComponents:
     def _create_animation_mode_selection_ui(self):
         collection = ui.RadioCollection()
         with ui.HStack(style=self.style, height=20):
-            for button_label in ["Animation On", "Animation Off"]:
+            for button_label in ["Animation Off", "Animation On"]:
                 ui.RadioButton(radio_collection=collection,
                                clicked_fn=self.animation_manager.toggle_animation_mode,
                                width=40,
