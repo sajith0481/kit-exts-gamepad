@@ -1,0 +1,26 @@
+#usda 1.0
+(
+    defaultPrim = "Animation"
+    endTimeCode = 10
+    metersPerUnit = 0.01
+    startTimeCode = 0
+    timeCodesPerSecond = 1
+    upAxis = "Y"
+)
+
+def Xform "Animation"
+{
+    double3 xformOp:translate.timeSamples = {
+        0: (48.7, 9.0532, 400),
+        1: (48.7, 9.0532, 410),
+        2: (48.7, 9.0532, 420),
+        3: (48.7, 9.0532, 430),
+        4: (48.7, 9.0532, 440),
+        5: (48.7, 9.0532, 450),
+        6: (48.7, 9.0532, 460),
+        7: (48.7, 9.0532, 470),
+        8: (48.7, 9.0532, 480),
+        9: (48.7, 9.0532, 490),
+        10: (48.7, 9.0532, 500)
+    }
+}

@@ -23,15 +23,22 @@ class UIComponents:
 
     def _create_ui(self):
         with self._recreate_ui:
-            with ui.VStack():
-                self._create_mode_selection_ui()
-                self._create_coordinate_inputs_ui()
-                ui.Button(
-                    "Add New Emitter",
-                    clicked_fn=self.add_new_emitter,
-                     alignment=ui.Alignment.CENTER,
-                     height=30,
-                     )
+            scroll_frame = ui.ScrollingFrame(
+                height=400,
+                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
+                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON
+                )
+            with scroll_frame:
+                with ui.VStack():
+                    self._create_mode_selection_ui()
+                    self._create_coordinate_inputs_ui()
+                    ui.Spacer(height=30)
+                    ui.Button(
+                        "Add New Emitter",
+                        clicked_fn=self.add_new_emitter,
+                        alignment=ui.Alignment.CENTER,
+                        height=30,
+                        )
 
     def _create_mode_selection_ui(self):
         collection = ui.RadioCollection()
