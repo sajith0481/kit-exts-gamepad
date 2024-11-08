@@ -1,7 +1,9 @@
 import omni.kit.commands
 from pxr import Sdf, Gf, UsdGeom, Usd
-from cesium.omniverse.api.globe_anchor import anchor_xform_at_path
-
+#from cesium.omniverse.api.globe_anchor import anchor_xform_at_path
+from cesium.usd.plugins.CesiumUsdSchemas import (
+    GlobeAnchorAPI as CesiumGlobeAnchorAPI
+)
 
 class SphereMaterialHandler:
     def __init__(self, stage, emitter_manager):
@@ -98,12 +100,19 @@ class SphereMaterialHandler:
         
         # set global anchor
         xform_path = Sdf.Path(sphere_path)
-        anchor_xform_at_path(
+        # anchor_xform_at_path(
+        #     xform_path,
+        #     emitter['latitude'],
+        #     emitter['longitude'],
+        #     emitter['height']
+        #     )
+        CesiumGlobeAnchorAPI(
             xform_path,
             emitter['latitude'],
             emitter['longitude'],
             emitter['height']
             )
+
 
         # Execute the command to scale the sphere
         radius = emitter['radius']

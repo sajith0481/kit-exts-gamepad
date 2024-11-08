@@ -12,7 +12,10 @@ from omni.ui import color as cl
 import numpy as np
 from pxr.Sdf import Path
 from typing import Optional
-from cesium.omniverse.api.globe_anchor import anchor_xform_at_path
+#from cesium.omniverse.api.globe_anchor import anchor_xform_at_path
+from cesium.usd.plugins.CesiumUsdSchemas import (
+    GlobeAnchorAPI as CesiumGlobeAnchorAPI
+)
 
 # This should be defined somewhere in your code
 def set_global_anchor(latitude, longitude, height, sphere_path):
@@ -21,7 +24,8 @@ def set_global_anchor(latitude, longitude, height, sphere_path):
     xform_path = Sdf.Path(sphere_path)
 
     # Call the function to set the global anchor
-    anchor_xform_at_path(xform_path, latitude, longitude, height)
+    #anchor_xform_at_path(xform_path, latitude, longitude, height)
+    CesiumGlobeAnchorAPI(xform_path, latitude, longitude, height)
 
     print(f"Setting global anchor at latitude: {latitude}, longitude: {longitude}, height: {height}")
 
