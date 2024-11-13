@@ -21,17 +21,30 @@ from cesium.usd.plugins.CesiumUsdSchemas import (
 def set_global_anchor(latitude, longitude, height, sphere_path):
 
     # Example usage:
-    xform_path = Sdf.Path(sphere_path)
+    #xform_path = Sdf.Path(sphere_path)
+
+    # Access the USD stage
+    context = omni.usd.get_context()
+    stage = context.get_stage()
+
+    # Define the anchor prim
+    anchor_prim_path = Sdf.Path(sphere_path)
+    anchor_prim = UsdGeom.Xform.Define(stage, anchor_prim_path).GetPrim()
 
     # Call the function to set the global anchor
     #anchor_xform_at_path(xform_path, latitude, longitude, height)
-    CesiumGlobeAnchorAPI(xform_path, latitude, longitude, height)
+    
+    # Apply the Cesium Globe Anchor API to the prim
+    globe_anchor = CesiumGlobeAnchorAPI.Apply(anchor_prim)
+    globe_anchor.GetAnchorLatitudeAttr().Set(latitude)
+    globe_anchor.GetAnchorLongitudeAttr().Set(longitude)
+    globe_anchor.GetAnchorHeightAttr().Set(height)
 
     print(f"Setting global anchor at latitude: {latitude}, longitude: {longitude}, height: {height}")
 
-class OmnibricksGamepadDemoExtension(omni.ext.IExt):
+class bahGamepadDemoExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
-        print("[omnibricks.gamepad.demo] omnibricks gamepad demo startup")
+        print("[bah.gamepad.demo] bah gamepad demo startup")
         self.manager = omni.kit.app.get_app().get_extension_manager()
         self.ext_path = self.manager.get_extension_path(ext_id)
         self.style = {
@@ -374,4 +387,4 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
     def on_shutdown(self):
         self.input.unsubscribe_to_gamepad_events(self.gamepad, self.gamepad_event_sub)
         self.gamepad_event_sub = None
-        print("[omnibricks.gamepad.demo] omnibricks gamepad demo shutdown")
+        print("[bah.gamepad.demo] bah gamepad demo shutdown")

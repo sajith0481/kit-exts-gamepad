@@ -99,19 +99,18 @@ class SphereMaterialHandler:
             strength=None)
         
         # set global anchor
-        xform_path = Sdf.Path(sphere_path)
+        #xform_path = Sdf.Path(sphere_path)
         # anchor_xform_at_path(
         #     xform_path,
         #     emitter['latitude'],
         #     emitter['longitude'],
         #     emitter['height']
         #     )
-        CesiumGlobeAnchorAPI(
-            xform_path,
-            emitter['latitude'],
-            emitter['longitude'],
-            emitter['height']
-            )
+        sphere_prim = self.stage.GetPrimAtPath(sphere_path)
+        globe_anchor = CesiumGlobeAnchorAPI.Apply(sphere_prim)
+        globe_anchor.GetAnchorLatitudeAttr().Set(emitter['latitude'])
+        globe_anchor.GetAnchorLongitudeAttr().Set(emitter['longitude'])
+        globe_anchor.GetAnchorHeightAttr().Set(emitter['height'])
 
 
         # Execute the command to scale the sphere

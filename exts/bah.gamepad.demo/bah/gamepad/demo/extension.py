@@ -7,7 +7,7 @@ from .sphere_material import SphereMaterialHandler
 from .emitter_manager import EmitterManager
 from .animation_manager import AnimationManager
 
-class OmnibricksGamepadDemoExtension(omni.ext.IExt):
+class bahGamepadDemoExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
         self.stage = omni.usd.get_context().get_stage()
 
@@ -31,4 +31,4 @@ class OmnibricksGamepadDemoExtension(omni.ext.IExt):
         self.emitter_manager.shutdown()
         self.sphere_material_handler.shutdown()
         self.animation_manager.shutdown()
-        print("[omnibricks.gamepad.demo] omnibricks gamepad demo shutdown")
+        print("[bah.gamepad.demo] bah gamepad demo shutdown")

@@ -1,4 +1,4 @@
-omnibricks.gamepad.demo
+bah.gamepad.demo
 #############################
 
 Example of Python only extension
@@ -11,7 +11,7 @@ Example of Python only extension
    CHANGELOG
 
 
-.. automodule::"omnibricks.gamepad.demo"
+.. automodule::"bah.gamepad.demo"
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:

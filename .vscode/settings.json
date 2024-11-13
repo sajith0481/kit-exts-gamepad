@@ -6,7 +6,7 @@
 
     // Python modules search paths:
     "python.analysis.extraPaths": [
-        "${workspaceFolder}/exts/omnibricks.gamepad.demo",
+        "${workspaceFolder}/exts/bah.gamepad.demo",
         "${workspaceFolder}/app/kit/exts/omni.kit.pip_archive/pip_prebundle",
         "${workspaceFolder}/app/kit/kernel/py",
         "${workspaceFolder}/app/kit/plugins/bindings-python",
