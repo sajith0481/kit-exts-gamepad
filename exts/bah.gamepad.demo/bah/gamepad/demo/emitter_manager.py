@@ -9,16 +9,16 @@ class EmitterManager:
             "prim_name": "Panzer_Kaserne",
             "latitude": 48.73516,
             "longitude": 9.07533,
-            "height": 2000,
+            "height": 250,
             "radius": 2000
         },
-        {"display_name": "Emitter 1", "latitude": 48.7625, "longitude": 9.1650, "height": 2000, "radius": 1500, "prim_name": "Emitter_1"},
-        {"display_name": "Emitter 2", "latitude": 48.7625, "longitude": 9.1650, "height": 2000, "radius": random.randint(500, 2500), "prim_name": "Emitter_2"},
-        {"display_name": "Emitter 3", "latitude": 48.7625, "longitude": 9.1450, "height": 2000, "radius": 1500, "prim_name": "Emitter_3"},
-        {"display_name": "Emitter 4", "latitude": 48.7360, "longitude": 9.1292, "height": 2000, "radius": random.randint(500, 2500), "prim_name": "Emitter_4"},
-        {"display_name": "Emitter 5", "latitude": 48.7227, "longitude": 9.1113, "height": 2000, "radius": random.randint(500, 2500), "prim_name": "Emitter_5"},
-        {"display_name": "Emitter 6", "latitude": 48.7094, "longitude": 9.0934, "height": 2000, "radius": random.randint(500, 2500), "prim_name": "Emitter_6"},
-        {"display_name": "Emitter 7", "latitude": 48.6899, "longitude": 9.0419, "height": 2000, "radius": random.randint(500, 2500), "prim_name": "Emitter_7"}
+        {"display_name": "Emitter 1", "latitude": 48.7625, "longitude": 9.1650, "height": 250, "radius": 1500, "prim_name": "Emitter_1"},
+        {"display_name": "Emitter 2", "latitude": 48.7625, "longitude": 9.1650, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter_2"},
+        {"display_name": "Emitter 3", "latitude": 48.7625, "longitude": 9.1650, "height": 250, "radius": 1500, "prim_name": "Emitter_3"},
+        {"display_name": "Emitter 4", "latitude": 48.7360, "longitude": 9.1292, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter_4"},
+        {"display_name": "Emitter 5", "latitude": 48.7227, "longitude": 9.1113, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter_5"},
+        {"display_name": "Emitter 6", "latitude": 48.7094, "longitude": 9.0934, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter_6"},
+        {"display_name": "Emitter 7", "latitude": 48.6899, "longitude": 9.0419, "height": random.randint(250, 1000), "radius": random.randint(500, 2500), "prim_name": "Emitter_7"}
         ]
 
         self.emitters = self.init_emitters
