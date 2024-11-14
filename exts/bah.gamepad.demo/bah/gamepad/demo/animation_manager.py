@@ -38,7 +38,7 @@ class AnimationManager:
         # Manage example emitter
         self.emitter = self.emitter_manager.get_emitter(2)
         self.sphere_path = f"/World/emitters/{self.emitter['prim_name']}"
-        self.radius_attribute = self.stage.GetPrimAtPath(self.sphere_path).GetAttribute("cesium:anchor:scale")
+        self.radius_attribute = self.stage.GetPrimAtPath(self.sphere_path).GetAttribute("xformOp:scale")
 
     def _on_timeline_event(self, e: carb.events.IEvent):
         if self.animation_mode == 0:

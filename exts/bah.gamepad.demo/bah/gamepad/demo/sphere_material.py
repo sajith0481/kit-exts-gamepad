@@ -117,7 +117,7 @@ class SphereMaterialHandler:
         radius = emitter['radius']
         omni.kit.commands.execute(
             'ChangeProperty',
-            prop_path=Sdf.Path(f"{sphere_path}.cesium:anchor:scale"),
+            prop_path=Sdf.Path(f"{sphere_path}.xformOp:scale"),
             # value=Gf.Vec3d(int(radius), int(radius), int(radius)),
             value=Gf.Vec3d(radius, radius, radius),
             prev=None)
