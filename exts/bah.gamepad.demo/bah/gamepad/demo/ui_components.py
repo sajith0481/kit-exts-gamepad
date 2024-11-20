@@ -4,7 +4,7 @@ import omni.usd
 
 
 class UIComponents:
-    def __init__(self, ext_id, gamepad_event_handler, sphere_material_handler, emitter_manager, animation_manager):
+    def __init__(self, ext_id, gamepad_event_handler, sphere_material_handler, emitter_manager, animation_manager, camera_manager):
         self.ext_id = ext_id
         self.manager = omni.kit.app.get_app().get_extension_manager()
         self.ext_path = self.manager.get_extension_path(ext_id)
@@ -12,6 +12,7 @@ class UIComponents:
         self.sphere_material_handler = sphere_material_handler
         self.emitter_manager = emitter_manager
         self.animation_manager = animation_manager
+        self.camera_manager = camera_manager
         self.emitter_field_references = []
         self.style = {
             "": {"background_color": ui.color.TRANSPARENT, "image_url": f"{self.ext_path}/icons/radio_off.svg"},
@@ -33,6 +34,7 @@ class UIComponents:
                 with ui.VStack():
                     self._create_mode_selection_ui()
                     self._create_animation_mode_selection_ui()
+                    self._create_camera_mode_selection_ui()
                     self._create_coordinate_inputs_ui()
                     ui.Spacer(height=30)
                     ui.Button(
@@ -59,6 +61,17 @@ class UIComponents:
             for button_label in ["Animation Off", "Animation On"]:
                 ui.RadioButton(radio_collection=collection,
                                clicked_fn=self.animation_manager.toggle_animation_mode,
+                               width=40,
+                               height=30)
+                ui.Label(f"{button_label}", name="text")
+        self.collection = collection
+
+    def _create_camera_mode_selection_ui(self):
+        collection = ui.RadioCollection()
+        with ui.HStack(style=self.style, height=20):
+            for button_label in ["FPV Camera Off", "FPV Camera On"]:
+                ui.RadioButton(radio_collection=collection,
+                               clicked_fn=self.camera_manager.toggle_camera_mode,
                                width=40,
                                height=30)
                 ui.Label(f"{button_label}", name="text")
